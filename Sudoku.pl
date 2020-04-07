@@ -1,4 +1,3 @@
-:- use_module(library(clpfd), []).
 entry(1).
 entry(2).
 entry(3).
@@ -11,6 +10,7 @@ entry(9).
 
 sudoku(GameBoard, Solution):-
      sudokuSolver([GameBoard], [], Solution), 
+     maplist(portray_clause, Solution),
      !.
 
 sudokuSolver([CurrGameBoard|T], Visited, CurrGameBoard):-
@@ -60,7 +60,7 @@ check_occupiedCell(NewGameBoard, RowIndex, ColumnIndex):-
      check_DifferentVals(Row),
 
      % Entries in each column are different.
-     clpfd:transpose(NewGameBoard, Transposed_GameBoard),
+     transpose(NewGameBoard, Transposed_GameBoard),
      find_row(Column, Transposed_GameBoard, ColumnIndex),
      check_DifferentVals(Column),
 
@@ -87,3 +87,16 @@ divide_into_blocks([A, B, C|R1],
                    [G, H, I|R3]):-
      check_DifferentVals([A, B, C, D, E, F, G, H, I]),
      divide_into_blocks(R1, R2, R3).
+
+transpose([], []).
+transpose([F|Fs], Ts) :-
+    transpose(F, [F|Fs], Ts).
+
+transpose([], _, []).
+transpose([_|Rs], Ms, [Ts|Tss]) :-
+        lists_firsts_rests(Ms, Ts, Ms1),
+        transpose(Rs, Ms1, Tss).
+
+lists_firsts_rests([], [], []).
+lists_firsts_rests([[F|Os]|Rest], [F|Fs], [Os|Oss]) :-
+        lists_firsts_rests(Rest, Fs, Oss).
