@@ -9,6 +9,51 @@ entry(7).
 entry(8).
 entry(9).
 
+sudoku(GameBoard, Solution):-
+     sudokuSolver([GameBoard], [], Solution), 
+     !.
+
+sudokuSolver([CurrGameBoard|T], Visited, CurrGameBoard):-
+    find_empty_cell(CurrGameBoard, 0, X, Y),
+    X = -1.
+sudokuSolver([CurrGameBoard|T], Visited, Solution):-
+     find_empty_cell(CurrGameBoard, 0, Row, Column),
+     getChildren([CurrGameBoard|T], Visited, Row, Column, Children),
+     append(T, Children, NewOpen),
+     sudokuSolver(NewOpen, [CurrGameBoard|Visited], Solution).
+
+find_empty_cell(_, 9, -1, -1).
+find_empty_cell([H|GameBoard], Row, X, Y):-
+     (nth0(Index , H, 0)-> X is Row, Y is Index ;
+                           Row1 is Row + 1, find_empty_cell(GameBoard, Row1, X, Y)).
+
+getChildren(Open, Visited, Row, Column, Children):-
+     findall(X, moves(Open, Visited, Row, Column, X), Children).
+
+moves([CurrGameBoard|T], Visited, Row, Column, NewGameBoard):-
+     occupy(CurrGameBoard, Row, Column, NewGameBoard),
+     check_occupiedCell(NewGameBoard, Row, Column),
+     \+ member(NewGameBoard, [CurrGameBoard|T]),
+     \+ member(NewGameBoard, Visited).
+
+occupy(CurrGameBoard, Row, Column, NewGameBoard):-
+     replace(CurrGameBoard, Row, Column, NewGameBoard).
+
+replace([H|T], 0, Column, [R|T]):-
+     entry(Var),
+     replace_column(H, Column, Var, R).  
+
+replace([H|T1], Row, Column, [H|T2]):- 
+     Row > 0 ,                              
+     Row1 is Row-1 ,                       
+     replace(T1 , Row1, Column, T2).         
+
+replace_column([_|T] , 0, Val, [Val|T]).  
+replace_column([H|T1], Column, Val, [H|T2]) :- 
+     Column > 0,                                
+     Column1 is Column-1,                                
+     replace_column(T1 , Column1, Val, T2).
+
 check_occupiedCell(NewGameBoard, RowIndex, ColumnIndex):-
      % Entries in each row are different.
      find_row(Row, NewGameBoard, RowIndex),
